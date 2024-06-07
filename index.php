@@ -1,12 +1,14 @@
 <?php
 
-$stream = fopen('./apr.csv', 'r');
+$stream = fopen('apr.csv', 'r');
 $stream2 = fopen('new_apr.csv', 'w');
 $pattern = '/^https:\/\/.*$/';
 
 $i = false;
 $row = '';
 $data = [];
+
+$keys = [];
 
 $counter = 0; // ******************************************************************* тестовый счетчик
 
@@ -102,6 +104,16 @@ do {
 
         $data['roistat_vid'] = checkSpace($row[10]) ?: 'none';
 
+        $dataKeys = array_keys($data);
+
+        foreach ($dataKeys as $value) {
+            if(!in_array($value, $keys)) {
+
+                $keys[] = $value;
+
+            }
+        }
+
         // print_r($data);
 
         // break;
@@ -119,6 +131,11 @@ do {
 
 } while ($row = fgetcsv($stream, null, ';'));
 
+fclose($stream2);
+
+$stream3 = fopen('new_apr_keys.csv', 'w');
+
+fputcsv($stream3, $keys, ';');
 
 // file_put_contents('./new_apr.csv', '');  перезаписать вверх файла
 
