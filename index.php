@@ -8,6 +8,8 @@ $i = false;
 $row = '';
 $data = [];
 
+$counter = 0; // ******************************************************************* тестовый счетчик
+
 do {
 
     if(!$i) {
@@ -52,7 +54,7 @@ do {
 
         }
 
-        if(preg_match($pattern, $row[3])) {
+        if(preg_match($pattern, $row[2])) {
 
             $parseUrl_fl_visitor = parse_url($row[2]);
 
@@ -84,10 +86,21 @@ do {
 
         }
 
-        // if(preg_match($pattern, $row[3])) {
+        $data['metric_ip'] = checkSpace($row[3]) ?: 'none';
 
-    
-        // }
+        $data['fl_visitors_remote_addr'] = checkSpace($row[4]) ?: 'none';
+
+        $data['metrics_uid'] = checkSpace($row[5]) ?: 'none';
+
+        $data['fl_visitors_ym_uid'] = checkSpace($row[6]) ?: 'none';
+
+        $data['roistat_id'] = checkSpace($row[7]) ?: 'none';
+
+        $data['fingerprint_id'] = checkSpace($row[8]) ?: 'none';
+
+        $data['vid'] = checkSpace($row[9]) ?: 'none';
+
+        $data['roistat_vid'] = checkSpace($row[10]) ?: 'none';
 
         // print_r($data);
 
@@ -97,6 +110,11 @@ do {
     
         fputcsv($stream2, $data, ';');
         
+        // $counter++; //*************************************** test file
+
+        // if($counter == 15) {
+        //     break;
+        // }
     }  
 
 } while ($row = fgetcsv($stream, null, ';'));
@@ -134,7 +152,7 @@ function parseFragments(string $fragmentsString = ''): array
 
             foreach ($fragments as $key => $value) {
                 
-                $fragments[$key] = $value;
+                $fragments['fragment_' . $key] = $value;
 
             }
 
@@ -142,4 +160,18 @@ function parseFragments(string $fragmentsString = ''): array
 
     return $fragments;
 
+}
+
+function checkSpace(string $str): null|string
+{
+
+    $result = trim($str);
+
+    if(mb_strlen($result)) {
+
+        return $str;
+
+    }
+
+    return null;
 }
