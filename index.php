@@ -2,6 +2,7 @@
 
 $stream = fopen('./apr.csv', 'r');
 $stream2 = fopen('new_apr.csv', 'w');
+$pattern = '/^https:\/\/.*$/';
 
 $i = false;
 $row = '';
@@ -19,65 +20,78 @@ do {
 
         $data['date'] = $row[0];
 
-        $parseUrl_metric = parse_url($row[1]);
+        if(preg_match($pattern, $row[1])) {
 
-        $data['scheme_metric'] = $parseUrl_metric['scheme'] ?: 'none';
+            $parseUrl_metric = parse_url($row[1]);
 
-        $data['host_metric'] = $parseUrl_metric['host'] ?: 'none';
+            $data['scheme_metric'] = $parseUrl_metric['scheme'] ?: 'none';
 
-        $data['path_metric'] = $parseUrl_metric['path'] ?: 'none';
+            $data['host_metric'] = $parseUrl_metric['host'] ?: 'none';
 
-        $queries = praseQuery($parseUrl_metric['query']);
+            $data['path_metric'] = $parseUrl_metric['path'] ?: 'none';
 
-        foreach ($queries as $key => $value) {
-            
-            $data[$key] = $value;
+            $queries = praseQuery($parseUrl_metric['query']);
 
-        }
-
-        $fragments = parseFragments($fragmentsString = array_key_exists('fragment', $parseUrl_metric) ? $parseUrl_metric['fragment'] : '');
-
-        if(count($fragments)) {
-
-            foreach ($fragments as $key => $value) {
-            
+            foreach ($queries as $key => $value) {
+                
                 $data[$key] = $value;
-    
+
+            }
+
+            $fragments = parseFragments($fragmentsString = array_key_exists('fragment', $parseUrl_metric) ? $parseUrl_metric['fragment'] : '');
+
+            if(count($fragments)) {
+
+                foreach ($fragments as $key => $value) {
+                
+                    $data[$key] = $value;
+        
+                }                       
+
             }
 
         }
 
-        $parseUrl_fl_visitor = parse_url($row[2]);
+        if(preg_match($pattern, $row[3])) {
 
-        $data['scheme_FL_visitor'] = $parseUrl_fl_visitor['scheme'] ?: 'none';
+            $parseUrl_fl_visitor = parse_url($row[2]);
 
-        $data['host_FL_visitor'] = $parseUrl_fl_visitor['host'] ?: 'none';
+            $data['scheme_FL_visitor'] = $parseUrl_fl_visitor['scheme'] ?: 'none';
 
-        $data['path_FL_visitor'] = $parseUrl_fl_visitor['path'] ?: 'none';
+            $data['host_FL_visitor'] = $parseUrl_fl_visitor['host'] ?: 'none';
 
-        $queries = praseQuery($parseUrl_fl_visitor['query']);
+            $data['path_FL_visitor'] = $parseUrl_fl_visitor['path'] ?: 'none';
 
-        foreach ($queries as $key => $value) {
-            
-            $data[$key] = $value;
+            $queries = praseQuery($parseUrl_fl_visitor['query']);
 
-        }
-
-        $fragments = parseFragments($fragmentsString = array_key_exists('fragment', $parseUrl_fl_visitor) ? $parseUrl_fl_visitor['fragment'] : '');
-
-        if(count($fragments)) {
-
-            foreach ($fragments as $key => $value) {
-            
+            foreach ($queries as $key => $value) {
+                
                 $data[$key] = $value;
-    
+
+            }
+
+            $fragments = parseFragments($fragmentsString = array_key_exists('fragment', $parseUrl_fl_visitor) ? $parseUrl_fl_visitor['fragment'] : '');
+
+            if(count($fragments)) {
+
+                foreach ($fragments as $key => $value) {
+                
+                    $data[$key] = $value;
+        
+                }
+
             }
 
         }
 
-        print_r($data);
+        // if(preg_match($pattern, $row[3])) {
 
-        break;
+    
+        // }
+
+        // print_r($data);
+
+        // break;
 
         // написать шапку
     
