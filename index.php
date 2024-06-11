@@ -61,11 +61,7 @@ do {
 
             $parseUrl_metric = parse_url($row[1]);
 
-            $data['scheme_metric'] = $parseUrl_metric['scheme'] ?: 'none';
-
-            $data['host_metric'] = $parseUrl_metric['host'] ?: 'none';
-
-            $data['path_metric'] = $parseUrl_metric['path'] ?: 'none';
+            $data['metric_URL'] = $row[1] ?: 'none';
 
             $queries = praseQuery($parseUrl_metric['query'], $companyKeys, $groupKeys, $company, $group);
 
@@ -75,47 +71,19 @@ do {
 
             }
 
-            $fragments = parseFragments($fragmentsString = array_key_exists('fragment', $parseUrl_metric) ? $parseUrl_metric['fragment'] : '');
-
-            if(count($fragments)) {
-
-                foreach ($fragments as $key => $value) {
-                
-                    $data[$key] = $value;
-        
-                }                       
-
-            }
-
         }
 
         if(preg_match($pattern, $row[2])) {
 
             $parseUrl_fl_visitor = parse_url($row[2]);
 
-            $data['scheme_FL_visitor'] = $parseUrl_fl_visitor['scheme'] ?: 'none';
+            $data['FL_visitor_URL'] = $row[2] ?: 'none';
 
-            $data['host_FL_visitor'] = $parseUrl_fl_visitor['host'] ?: 'none';
-
-            $data['path_FL_visitor'] = $parseUrl_fl_visitor['path'] ?: 'none';
-
-            $queries = praseQuery($parseUrl_fl_visitor['query'], $companyKeys, $groupKeys, $company, $group);
+            $queries = praseQueryFL($parseUrl_fl_visitor['query'], $companyKeys, $groupKeys, $company, $group);
 
             foreach ($queries as $key => $value) {
                 
-                $data[$key] = $value;
-
-            }
-
-            $fragments = parseFragments($fragmentsString = array_key_exists('fragment', $parseUrl_fl_visitor) ? $parseUrl_fl_visitor['fragment'] : '');
-
-            if(count($fragments)) {
-
-                foreach ($fragments as $key => $value) {
-                
-                    $data[$key] = $value;
-        
-                }
+                $data[$key . ''] = $value;
 
             }
 
@@ -182,28 +150,72 @@ function praseQuery(string $queryString, $companyKeys, $groupKeys, $company, $gr
         
         $nv = explode('=', $value);
 
-        $queries[$nv[0]] = $nv[1];
+        foreach ($nv as $key => $value) {
 
-        if($nv[0] == 'cm_id') {
-
-            $parsed = explode('_', $nv[1]);
-
-            $companyKey = array_search($parsed[0], $companyKeys);
-            $groupKey = array_search($parsed[1], $groupKeys);
-
-            if($companyKey !== false) {
-                // echo $company[$companyKeys[$companyKey]] . ' : ' . $companyKeys[$companyKey] . "\n";
-
-                $queries['company_id'] = $companyKeys[$companyKey];
-                $queries['company_name'] = $company[$companyKeys[$companyKey]];
+            if($value == 'cm_id') {
+                
+                $parsed = explode('_', $nv[$key + 1]);
+    
+                $companyKey = array_search($parsed[0], $companyKeys);
+                $groupKey = array_search($parsed[1], $groupKeys);
+    
+                if($companyKey !== false) {
+                    // echo $company[$companyKeys[$companyKey]] . ' : ' . $companyKeys[$companyKey] . "\n";
+    
+                    $queries['company_id_metric'] = $companyKeys[$companyKey];
+                    $queries['company_name_metric'] = $company[$companyKeys[$companyKey]];
+                }
+    
+                if($groupKey !== false) {
+                    // echo $group[$groupKey[$groupKey]] . ' : ' . $groupKeys[$groupKey] . "\n";
+    
+                    $queries['group_id_metric'] = $groupKeys[$groupKey ? $groupKey : 'none'];
+                    $queries['group_name_metric'] = $group[$groupKeys[$groupKey]];
+                }
             }
 
-            if($groupKey !== false) {
-                // echo $group[$groupKey[$groupKey]] . ' : ' . $groupKeys[$groupKey] . "\n";
+        }
 
-                $queries['group_id'] = $groupKeys[$groupKey ? $groupKey : 'none'];
-                $queries['group_name'] = $group[$groupKeys[$groupKey]];
+    }
+
+    return $queries;
+}
+
+function praseQueryFL(string $queryString, $companyKeys, $groupKeys, $company, $group): array
+{
+
+    $queries = [];
+
+    $querySep = explode('&', $queryString);
+
+    foreach ($querySep as $value) {
+        
+        $nv = explode('=', $value);
+
+        foreach ($nv as $key => $value) {
+
+            if($value == 'cm_id') {
+                
+                $parsed = explode('_', $nv[$key + 1]);
+    
+                $companyKey = array_search($parsed[0], $companyKeys);
+                $groupKey = array_search($parsed[1], $groupKeys);
+    
+                if($companyKey !== false) {
+                    // echo $company[$companyKeys[$companyKey]] . ' : ' . $companyKeys[$companyKey] . "\n";
+    
+                    $queries['company_id_FL'] = $companyKeys[$companyKey];
+                    $queries['company_name_FL'] = $company[$companyKeys[$companyKey]];
+                }
+    
+                if($groupKey !== false) {
+                    // echo $group[$groupKey[$groupKey]] . ' : ' . $groupKeys[$groupKey] . "\n";
+    
+                    $queries['group_id_FL'] = $groupKeys[$groupKey ? $groupKey : 'none'];
+                    $queries['group_name_FL'] = $group[$groupKeys[$groupKey]];
+                }
             }
+
         }
 
     }
