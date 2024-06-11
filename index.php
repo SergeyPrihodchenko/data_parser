@@ -1,5 +1,38 @@
 <?php
 
+$companiesStream = fopen('companies.csv', 'r');
+$grpoupsStream = fopen('groups.csv', 'r');
+
+$company = [];
+$group = [];
+
+while ($result = fgetcsv($companiesStream, null, ',')) {
+    
+    if(isset($result)) {
+        $company[$result[0]] = $result[1];
+    }
+
+}
+
+while ($result = fgetcsv($grpoupsStream, null, ',')) {
+    
+    if(isset($result)) {
+        $group[$result[0]] = $result[1];
+    }
+
+}
+
+$companyKeys  = [];
+$groupKeys  = [];
+
+foreach ($company as $key => $value) {
+    $companyKeys[] = $key;
+}
+
+foreach ($group as $key => $value) {
+    $groupKeys[] = $key;
+}
+
 $stream = fopen('apr.csv', 'r');
 $stream2 = fopen('new_apr.csv', 'w');
 $pattern = '/^https:\/\/.*$/';
@@ -34,7 +67,7 @@ do {
 
             $data['path_metric'] = $parseUrl_metric['path'] ?: 'none';
 
-            $queries = praseQuery($parseUrl_metric['query']);
+            $queries = praseQuery($parseUrl_metric['query'], $companyKeys, $groupKeys, $company, $group);
 
             foreach ($queries as $key => $value) {
                 
@@ -66,7 +99,7 @@ do {
 
             $data['path_FL_visitor'] = $parseUrl_fl_visitor['path'] ?: 'none';
 
-            $queries = praseQuery($parseUrl_fl_visitor['query']);
+            $queries = praseQuery($parseUrl_fl_visitor['query'], $companyKeys, $groupKeys, $company, $group);
 
             foreach ($queries as $key => $value) {
                 
@@ -118,7 +151,6 @@ do {
 
         // break;
 
-        // написать шапку
     
         fputcsv($stream2, $data, ';');
         
@@ -139,8 +171,7 @@ fputcsv($stream3, $keys, ';');
 
 // file_put_contents('./new_apr.csv', '');  перезаписать вверх файла
 
-
-function praseQuery(string $queryString): array
+function praseQuery(string $queryString, $companyKeys, $groupKeys, $company, $group): array
 {
 
     $queries = [];
@@ -152,6 +183,28 @@ function praseQuery(string $queryString): array
         $nv = explode('=', $value);
 
         $queries[$nv[0]] = $nv[1];
+
+        if($nv[0] == 'cm_id') {
+
+            $parsed = explode('_', $nv[1]);
+
+            $companyKey = array_search($parsed[0], $companyKeys);
+            $groupKey = array_search($parsed[1], $groupKeys);
+
+            if($companyKey !== false) {
+                // echo $company[$companyKeys[$companyKey]] . ' : ' . $companyKeys[$companyKey] . "\n";
+
+                $queries['company_id'] = $companyKeys[$companyKey];
+                $queries['company_name'] = $company[$companyKeys[$companyKey]];
+            }
+
+            if($groupKey !== false) {
+                // echo $group[$groupKey[$groupKey]] . ' : ' . $groupKeys[$groupKey] . "\n";
+
+                $queries['group_id'] = $groupKeys[$groupKey ? $groupKey : 'none'];
+                $queries['group_name'] = $group[$groupKeys[$groupKey]];
+            }
+        }
 
     }
 

@@ -2,3 +2,8 @@ apr.csv
 direct.csv
 new_apr.csv
 tests.csv
+new_apr_keys.csv
+/direct/cm_id.csv
+/direct/companies.csv
+/direct/groups.csv
+/direct/result.csv
